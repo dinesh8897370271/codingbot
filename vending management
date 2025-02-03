@@ -1,0 +1,254 @@
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Scanner;
+
+class VendingMachine {
+    private Map<Integer, String> inventory = new HashMap<>();
+    private Map<Integer, Integer> prices = new HashMap<>();
+    private Map<Integer, Integer> sales = new HashMap<>();
+    private int totalSales = 0;
+    private int totalProfit = 0;
+
+    public void addItem(int number, String item, int price) {
+        inventory.put(number, item.toUpperCase());
+        prices.put(number, price);
+    }
+
+    public void displayItems() {
+        System.out.println("Available items:");
+        for (Map.Entry<Integer, String> entry : inventory.entrySet()) {
+            int number = entry.getKey();
+            String item = entry.getValue();
+            int price = prices.get(number);
+            System.out.println(number + ". " + item + " - Price: " + price + " rupees");
+        }
+    }
+
+    public int purchaseItems() {
+        Scanner scanner = new Scanner(System.in);
+        int totalAmount = 0;
+        String input;
+        Map<Integer, Integer> itemsPurchased = new HashMap<>();
+
+        while (true) {
+            System.out.print("Enter item number to purchase (or type 'End' to finish): ");
+            input = scanner.nextLine();
+
+            if (input.equalsIgnoreCase("End")) {
+                break;
+            }
+
+            try {
+                int itemNumber = Integer.parseInt(input);
+                if (!inventory.containsKey(itemNumber)) {
+                    System.out.println("Item not found. Please try again.");
+                    continue;
+                }
+                System.out.print("Enter quantity for " + inventory.get(itemNumber) + ": ");
+                int quantity = scanner.nextInt();
+                scanner.nextLine(); // Consume newline
+
+                int price = prices.get(itemNumber);
+                totalAmount += price * quantity;
+                itemsPurchased.put(itemNumber, itemsPurchased.getOrDefault(itemNumber, 0) + quantity);
+                System.out.println("Added " + quantity + " of " + inventory.get(itemNumber) + " - Total Price: " + (price * quantity) + " rupees");
+            } catch (NumberFormatException e) {
+                System.out.println("Invalid input. Please enter a valid item number or 'End' to finish.");
+            }
+        }
+
+        // Display total amount and items purchased
+        System.out.println("Total amount to pay: " + totalAmount + " rupees.");
+        System.out.println("Items purchased:");
+        for (Map.Entry<Integer, Integer> entry : itemsPurchased.entrySet()) {
+            int itemNumber = entry.getKey();
+            int quantity = entry.getValue();
+            System.out.println(inventory.get(itemNumber) + ": " + quantity);
+        }
+
+        return totalAmount;
+    }
+
+    public void completePurchase(int totalAmount, int money) {
+        if (money < totalAmount) {
+            System.out.println("Insufficient funds. Transaction cancelled.");
+            return;
+        }
+
+        totalSales += totalAmount;
+        int change = money - totalAmount;
+        System.out.println("Transaction successful! Your change is " + change + " rupees.");
+    }
+
+    public void restockItem(int itemNumber, int quantity) {
+        if (!inventory.containsKey(itemNumber)) {
+            System.out.println("Item not found.");
+            return;
+        }
+        System.out.println("Restocked " + quantity + " units of " + inventory.get(itemNumber) + ".");
+    }
+
+    public void removeItem(int itemNumber) {
+        if (!inventory.containsKey(itemNumber)) {
+            System.out.println("Item not found.");
+            return;
+        }
+        inventory.remove(itemNumber);
+        prices.remove(itemNumber);
+        sales.remove(itemNumber);
+        System.out.println("Removed " + itemNumber + " from the vending machine.");
+    }
+
+    public void updatePrice(int itemNumber, int newPrice) {
+        if (!inventory.containsKey(itemNumber)) {
+            System.out.println("Item not found.");
+            return;
+        }
+        prices.put(itemNumber, newPrice);
+        System.out.println("Updated price of " + inventory.get(itemNumber) + " to " + newPrice + " rupees.");
+    }
+
+    public void viewTotalSales() {
+        System.out.println("Total sales: " + totalSales + " rupees.");
+    }
+
+    public void generateSalesReport() {
+        System.out.println("Sales Report:");
+        for (Map.Entry<Integer, Integer> entry : sales.entrySet()) {
+            int itemNumber = entry.getKey();
+            int totalSalesForItem = entry.getValue();
+            System.out.println(inventory.get(itemNumber) + ": " + totalSalesForItem + " rupees worth sold.");
+        }
+    }
+
+    public void viewTotalProfit() {
+        System.out.println("Total profit: " + totalProfit + " rupees.");
+    }
+
+    public void calculateProfit() {
+        totalProfit = totalSales; // Simplified profit calculation for now
+        System.out.println("Total profit calculated: " + totalProfit + " rupees.");
+    }
+
+    public void displayMostSoldItem() {
+        int mostSoldItemNumber = -1;
+        int maxSales = 0;
+        for (Map.Entry<Integer, Integer> entry : sales.entrySet()) {
+            if (entry.getValue() > maxSales) {
+                mostSoldItemNumber = entry.getKey();
+                maxSales = entry.getValue();
+            }
+        }
+        if (mostSoldItemNumber != -1) {
+            System.out.println("Most sold item: " + inventory.get(mostSoldItemNumber) + " with " + maxSales + " rupees worth sold.");
+        } else {
+            System.out.println("No items sold yet.");
+        }
+    }
+}
+
+public class Main {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+
+        // Username and password verification
+        Map<String, String> users = new HashMap<>();
+        users.put("admin", "1234");
+        users.put("user1", "pass1");
+        users.put("user2", "pass2");
+
+        System.out.print("Enter username: ");
+        String username = scanner.nextLine();
+        System.out.print("Enter password: ");
+        String password = scanner.nextLine();
+
+        if (!users.containsKey(username) || !users.get(username).equals(password)) {
+            System.out.println("Access denied. Invalid username or password.");
+            return;
+        }
+
+        System.out.println("Access granted.");
+
+        VendingMachine vm = new VendingMachine();
+
+        // Initial setup with some products
+        vm.addItem(1, "Coca Cola", 25);
+        vm.addItem(2, "Pepsi", 20);
+        vm.addItem(3, "Chocolate Bar", 15);
+        vm.addItem(4, "Chips", 10);
+        vm.addItem(5, "Water Bottle", 5);
+
+        while (true) {
+            System.out.println("\nVending Machine Management");
+            System.out.println("1. Display Items");
+            System.out.println("2. Purchase Items");
+            System.out.println("3. Restock Item");
+            System.out.println("4. Remove Item");
+            System.out.println("5. Update Item Price");
+            System.out.println("6. View Total Sales");
+            System.out.println("7. Generate Sales Report");
+            System.out.println("8. View Total Profit");
+            System.out.println("9. Calculate Profit");
+            System.out.println("10. Display Most Sold Item");
+            System.out.println("11. Exit");
+            System.out.print("Choose an option: ");
+
+            int choice = scanner.nextInt();
+            scanner.nextLine(); // Consume newline
+
+            switch (choice) {
+                case 1:
+                    vm.displayItems();
+                    break;
+                case 2:
+                    // Display items before purchasing
+                    vm.displayItems();
+                    int totalAmount = vm.purchaseItems();
+                    System.out.print("Insert money: ");
+                    int money = scanner.nextInt();
+                    vm.completePurchase(totalAmount, money);
+                    break;
+                case 3:
+                    System.out.print("Enter item number to restock: ");
+                    int restockItemNumber = scanner.nextInt();
+                    System.out.print("Enter quantity: ");
+                    int restockQuantity = scanner.nextInt();
+                    vm.restockItem(restockItemNumber, restockQuantity);
+                    break;
+                case 4:
+                    System.out.print("Enter item number to remove: ");
+                    int removeItemNumber = scanner.nextInt();
+                    vm.removeItem(removeItemNumber);
+                    break;
+                case 5:
+                    System.out.print("Enter item number to update price: ");
+                    int updateItemNumber = scanner.nextInt();
+                    System.out.print("Enter new price: ");
+                    int newPrice = scanner.nextInt();
+                    vm.updatePrice(updateItemNumber, newPrice);
+                    break;
+                case 6:
+                    vm.viewTotalSales();
+                    break;
+                case 7:
+                    vm.generateSalesReport();
+                    break;
+                case 8:
+                    vm.viewTotalProfit();
+                    break;
+                case 9:
+                    vm.calculateProfit();
+                    break;
+                case 10:
+                    vm.displayMostSoldItem();
+                    break;
+                case 11:
+                    System.out.println("Exiting...");
+                    scanner.close();
+                    System.exit(0);
+                default:
+                    System.out.println("Invalid option. Please try again.");
+            }
+        }
+    }
+}
